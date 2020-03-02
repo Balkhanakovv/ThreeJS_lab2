@@ -11,6 +11,7 @@ var earthCloud = createEarthCloud();
 var geometry, tex, material
 
 var a = 0.0;
+var b = a;
 
 init();
 animate();
@@ -65,7 +66,7 @@ function onWindowResize()
 function animate()
 {
     a += 0.01;
-
+    b += 0.01;
     requestAnimationFrame( animate );
     render();
 
@@ -90,13 +91,19 @@ function animate()
 
     for (var i = 0; i < keys.length; i++){
         if (keys[i] == true){
-            camera.position.set(planets[i+2].planet.position.x + 3, planets[i+2].planet.position.y + 3, planets[i+2].planet.position.z + 3);
+            var x = planets[i+2].planet.position.x + (planets[i+2].pos.z / (i+4)) * Math.cos(b * (i+2));
+            var z = planets[i+2].planet.position.z + (planets[i+2].pos.z / (i+4)) * Math.sin(b * (i+2));
+
+            camera.position.set(x, 0, z);
             camera.lookAt(new THREE.Vector3(planets[i+2].planet.position.x, planets[i+2].planet.position.y, planets[i+2].planet.position.z));
         }
         
         if (keys[i] == true && i == 0)
         {
-            camera.position.set(planets[i+2].planet.position.x + 1, planets[i+2].planet.position.y + 1, planets[i+2].planet.position.z + 1);
+            var x = planets[i+2].planet.position.x + (planets[i+2].pos.z - 8) * Math.cos(b * (i+2));
+            var z = planets[i+2].planet.position.z + (planets[i+2].pos.z - 8) * Math.sin(b * (i+2));
+
+            camera.position.set(x, 0, z);
             camera.lookAt(new THREE.Vector3(planets[i+2].planet.position.x, planets[i+2].planet.position.y, planets[i+2].planet.position.z));
         }
     }
@@ -128,6 +135,14 @@ function animate()
     if (keyboard.pressed("4")){
         keys.fill(false, 0, keys.lenght)
         keys[3] = true;
+    }
+
+    if (keyboard.pressed("left")){
+        b += 0.005;
+    }
+
+    if (keyboard.pressed("right")){
+        b -= 0.005;
     }
 
     earthCloud.position.set(planets[4].planet.position.x, planets[4].planet.position.y, planets[4].planet.position.z);
