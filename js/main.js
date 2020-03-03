@@ -7,6 +7,7 @@ var light = new THREE.AmbientLight( 0x101010 );
 var keyboard = new THREEx.KeyboardState();
 var keys = [false, false, false, false];
 var earthCloud = createEarthCloud();
+var moonOrbit;
 
 var geometry, tex, material
 
@@ -52,8 +53,17 @@ function init()
         var axis = new THREE.Vector3(1, 0, 0); 
         orbit.rotateOnAxis(axis, Math.PI/2);
 
-        scene.add( orbit )
+        scene.add( orbit );
     }
+
+    var geometryOrbit = new THREE.CircleGeometry( 2.5, 45 );
+    var materialOrbit = new THREE.MeshBasicMaterial( { color: 0x606060 } );
+    geometryOrbit.vertices.shift();
+    moonOrbit = new THREE.LineLoop( geometryOrbit, materialOrbit );
+    var axis = new THREE.Vector3(1, 0, 0); 
+    moonOrbit.rotateOnAxis(axis, Math.PI/2);
+    moonOrbit.position.set(planets[4].planet.position.x, 0, planets[4].planet.position.z);
+    scene.add( moonOrbit );
 }
 
 function onWindowResize()
@@ -107,6 +117,10 @@ function animate()
             camera.lookAt(new THREE.Vector3(planets[i+2].planet.position.x, planets[i+2].planet.position.y, planets[i+2].planet.position.z));
         }
     }
+
+    var moonX = planets[4].planet.position.x + 0 * Math.cos(a);
+    var moonZ = planets[4].planet.position.z + 0 * Math.sin(a );
+    moonOrbit.position.set(moonX, 0, moonZ);
 
     /*---Keys---*/
     if (keyboard.pressed("0")){
