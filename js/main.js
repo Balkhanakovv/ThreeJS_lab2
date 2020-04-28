@@ -1,6 +1,8 @@
 var container;
-var camera, scene, renderer;
+var camera, scene, renderer, cameraOrtho, sceneOrtho;
 var planets = [];
+var planetName = [];
+var planetInfo = [];
 var loader = new THREE.TextureLoader();    
 var spotlight = new THREE.PointLight(0xffffff); 
 var light = new THREE.AmbientLight( 0x101010 );
@@ -24,7 +26,15 @@ function init()
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 ); 
     camera.position.set(80, 30, 15);
     camera.lookAt(new THREE.Vector3( 0, 0.0, 0));
+
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    cameraOrtho = new THREE.OrthographicCamera( - width / 2, width / 2, height / 2, -height / 2, 1, 10 );
+    cameraOrtho.position.z = 10;
     
+    sceneOrtho = new THREE.Scene();
+
     renderer = new THREE.WebGLRenderer( { antialias: false } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setClearColor( 0x0000ff, 1);
@@ -32,6 +42,8 @@ function init()
     container.appendChild( renderer.domElement );
     window.addEventListener( 'resize', onWindowResize, false );  
     
+    renderer.autoClear = false;
+
     spotlight.position.set(0, 0, 0);
     scene.add( spotlight );
     scene.add( light );
@@ -44,6 +56,16 @@ function init()
     addPlanet(0.8, 'Planets/mars/marsmap1k.jpg', 'Planets/mars/marsbump1k.jpg',45);
     addPlanet(0.3, 'Planets/earth/moon/moonmap1k.jpg', 'Planets/earth/moon/moonbump1k.jpg',32.5);
     scene.add( earthCloud );
+
+    addSpriteName( 'Sprites/MercuryName.png' );
+    addSpriteName( 'Sprites/VenusName.png' );
+    addSpriteName( 'Sprites/EarthName.png' );
+    addSpriteName( 'Sprites/MarsName.png' );
+
+    addSpriteInfo( 'Sprites/MercuryInfo.png' );
+    addSpriteInfo( 'Sprites/VenusInfo.png' );
+    addSpriteInfo( 'Sprites/EarthInfo.png' );
+    addSpriteInfo( 'Sprites/MarsInfo.png' );
 
     for (var i = 2; i < 6; i++){        
         var geometryOrbit = new THREE.CircleGeometry( planets[i].pos.z, 45 );
@@ -88,7 +110,8 @@ function animate()
             var x = 0 + planets[i].pos.z * Math.cos(a / i);
             var z = 0 + planets[i].pos.z * Math.sin(a / i);
         
-            planets[i].planet.position.set(x, 0, z);  
+            planets[i].planet.position.set(x, 0, z); 
+            planetName[i - 2].position.set(x, 1.7 , z); 
         }
         else
         {
@@ -127,28 +150,66 @@ function animate()
         camera.position.set(80, 30, 15);
         camera.lookAt(new THREE.Vector3( 0, 0.0, 0));
 
+        for (var i = 0; i < planetName.length; i++)
+        {
+            planetName[i].visible = true;
+            planetInfo[i].visible = false;
+        }
+
         for (var i = 0; i < keys.length; i++)
             keys[i] = false;
     }
 
     if (keyboard.pressed("1")){
         keys.fill(false, 0, keys.lenght)
-        keys[0] = true;        
+        keys[0] = true; 
+        
+        for (var i = 0; i < planetName.length; i++)
+        {
+            planetName[i].visible = false;
+            planetInfo[i].visible = false;
+        } 
+        
+        planetInfo[0].visible = true;
     }
 
     if (keyboard.pressed("2")){
         keys.fill(false, 0, keys.lenght)
         keys[1] = true;
+        
+        for (var i = 0; i < planetName.length; i++)
+        {
+            planetName[i].visible = false;
+            planetInfo[i].visible = false;
+        }
+
+        planetInfo[1].visible = true;
     }
 
     if (keyboard.pressed("3")){
         keys.fill(false, 0, keys.lenght)
         keys[2] = true;
+
+        for (var i = 0; i < planetName.length; i++)
+        {
+            planetName[i].visible = false;
+            planetInfo[i].visible = false;
+        }
+        
+        planetInfo[2].visible = true;
     }
     
     if (keyboard.pressed("4")){
         keys.fill(false, 0, keys.lenght)
         keys[3] = true;
+
+        for (var i = 0; i < planetName.length; i++)
+        {
+            planetName[i].visible = false;
+            planetInfo[i].visible = false;
+        }
+
+        planetInfo[3].visible = true;
     }
 
     if (keyboard.pressed("left")){
@@ -165,7 +226,10 @@ function animate()
 
 function render()
 {
+    renderer.clear();
     renderer.render( scene, camera );
+    renderer.clearDepth();
+    renderer.render( sceneOrtho, cameraOrtho );
 }
 
 function addSpace()
@@ -305,4 +369,35 @@ function createEarthCloud()
 
     var mesh = new THREE.Mesh(geometry, material);
     return mesh;
+}
+
+function addSpriteName(name)
+{
+    var texture = loader.load(name);
+    var material = new THREE.SpriteMaterial( {map: texture} );
+
+    var sprite = new THREE.Sprite( material );
+    sprite.position.set( 20, 0, 0);
+    sprite.scale.set(2, 1.3, 1);
+    scene.add( sprite );
+    planetName.push( sprite );
+}
+
+function addSpriteInfo(name)
+{
+    var texture = loader.load(name);
+    var material = new THREE.SpriteMaterial( {map: texture} );
+
+    var sprite = new THREE.Sprite( material );
+    sprite.center.set( 0.0, 1.0 );
+    sprite.scale.set( 256, 256, 1 );
+
+    sceneOrtho.add(sprite);
+    var width = window.innerWidth / 2;
+    var height = window.innerHeight / 2;
+
+    sprite.position.set( -width, height, 1 );
+    sprite.visible = false;
+    
+    planetInfo.push( sprite );
 }
